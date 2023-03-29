@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/BeanCodeDe/TheRedShirts-Lobby/internal/app/theredshirts/util"
+	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/util"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

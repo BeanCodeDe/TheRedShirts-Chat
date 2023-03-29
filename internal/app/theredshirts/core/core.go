@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/BeanCodeDe/TheRedShirts-Lobby/internal/app/theredshirts/db"
+	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/db"
 	"github.com/google/uuid"
 )
 
@@ -17,39 +17,31 @@ type (
 	}
 
 	Core interface {
-		CreateLobby(lobby *Lobby) error
-		GetLobby(lobbyId uuid.UUID) (*Lobby, error)
-		UpdateLobby(lobby *Lobby) error
-		GetLobbies() ([]*Lobby, error)
-		DeleteLobby(lobbyId uuid.UUID) error
-		JoinLobby(join *Join) error
-		LeaveLobby(lobbyId uuid.UUID, playerId uuid.UUID) error
+		//Message
+		CreateMessage(playerId uuid.UUID, message *Message) error
+		GetMessages(playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error)
+
+		//Player
+		CreatePlayer(player *Player) error
+		DeletePlayer(playerId uuid.UUID) error
+		GetPlayer(playerId uuid.UUID) (*Player, error)
 	}
 
 	//Objects
-	Lobby struct {
+	Message struct {
 		ID         uuid.UUID
-		Name       string
-		Owner      *Player
-		Password   string
-		Difficulty string
-		Players    []*Player
-	}
-
-	Join struct {
-		PlayerId uuid.UUID
-		LobbyID  uuid.UUID
-		Name     string
-		Team     string
-		Password string
+		SendTime   time.Time
+		PlayerName string
+		LobbyId    uuid.UUID
+		Number     int
+		Message    string
 	}
 
 	Player struct {
-		ID          uuid.UUID
-		Name        string
-		Team        string
-		LastRefresh time.Time
-		LobbyId     uuid.UUID
+		ID      uuid.UUID
+		LobbyId uuid.UUID
+		Name    string
+		Team    string
 	}
 )
 
@@ -63,6 +55,5 @@ func NewCore() (Core, error) {
 		return nil, fmt.Errorf("error while initializing database: %v", err)
 	}
 	core := &CoreFacade{db: db}
-	core.startCleanUp()
 	return core, nil
 }

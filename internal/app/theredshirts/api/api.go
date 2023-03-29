@@ -3,8 +3,8 @@ package api
 import (
 	"fmt"
 
-	"github.com/BeanCodeDe/TheRedShirts-Lobby/internal/app/theredshirts/core"
-	"github.com/BeanCodeDe/TheRedShirts-Lobby/internal/app/theredshirts/util"
+	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/core"
+	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/util"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -41,11 +41,8 @@ func NewApi() (Api, error) {
 	e.Use(middleware.CORS(), setLoggerMiddleware, middleware.Recover())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	serverGroup := e.Group(server_root_path)
-	initServerInterface(serverGroup, echoApi)
-
-	lobbyGroup := e.Group(lobby_root_path)
-	initLobbyInterface(lobbyGroup, echoApi)
+	chatGroup := e.Group(chat_root_path)
+	initChatInterface(chatGroup, echoApi)
 
 	address := util.GetEnvWithFallback("ADDRESS", "0.0.0.0")
 	port, err := util.GetEnvIntWithFallback("PORT", 1203)

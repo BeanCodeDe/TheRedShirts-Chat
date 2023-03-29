@@ -1,1 +1,1 @@
-CREATE SCHEMA theredshirts_lobby; 
+CREATE SCHEMA theredshirts_chat; 

@@ -5,25 +5,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BeanCodeDe/TheRedShirts-Lobby/internal/app/theredshirts/util"
+	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/util"
 	"github.com/google/uuid"
 )
 
 type (
-	Lobby struct {
+	Message struct {
 		ID         uuid.UUID `db:"id"`
-		Name       string    `db:"name"`
-		Owner      uuid.UUID `db:"owner"`
-		Password   string    `db:"password"`
-		Difficulty string    `db:"difficulty"`
+		SendTime   time.Time `db:"send_time"`
+		PlayerName string    `db:"player_name"`
+		LobbyId    uuid.UUID `db:"lobby_id"`
+		Number     int       `db:"number"`
+		Message    string    `db:"message"`
 	}
 
 	Player struct {
-		ID          uuid.UUID `db:"id"`
-		Name        string    `db:"name"`
-		Team        string    `db:"team"`
-		LobbyId     uuid.UUID `db:"lobby_id"`
-		LastRefresh time.Time `db:"last_refresh"`
+		ID      uuid.UUID `db:"id"`
+		LobbyId uuid.UUID `db:"lobby_id"`
+		Name    string    `db:"name"`
+		Team    string    `db:"team"`
 	}
 
 	DB interface {
@@ -33,26 +33,19 @@ type (
 
 	DBTx interface {
 		HandleTransaction(err error)
-		//Lobby
-		CreateLobby(lobby *Lobby) error
-		UpdateLobby(lobby *Lobby) error
-		DeleteLobby(id uuid.UUID) error
-		DeleteEmptyLobbies() error
-		GetLobbyById(id uuid.UUID) (*Lobby, error)
-		GetAllLobbies() ([]*Lobby, error)
+		//Message
+		CreateMessage(message *Message) error
+		GetMessages(lobbyId uuid.UUID, number int) ([]*Message, error)
+
 		//Player
 		CreatePlayer(player *Player) error
 		DeletePlayer(id uuid.UUID) error
-		DeleteAllPlayerInLobby(lobbyId uuid.UUID) error
-		DeletePlayerOlderRefreshDate(time time.Time) error
-		UpdatePlayer(player *Player) error
-		GetPlayerById(id uuid.UUID) (*Player, error)
-		GetAllPlayersInLobby(lobbyId uuid.UUID) ([]*Player, error)
+		GetPlayer(id uuid.UUID) (*Player, error)
 	}
 )
 
 const (
-	schema_name = "theredshirts_lobby"
+	schema_name = "theredshirts_chat"
 )
 
 func NewConnection() (DB, error) {
