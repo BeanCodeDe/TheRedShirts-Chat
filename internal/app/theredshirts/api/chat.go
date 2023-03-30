@@ -98,7 +98,7 @@ func (api *EchoApi) addPlayer(context echo.Context) error {
 
 func (api *EchoApi) deletePlayer(context echo.Context) error {
 	logger := context.Get(logger_key).(*log.Entry)
-	logger.Debug("Create player")
+	logger.Debug("delete player")
 
 	playerId, err := getPlayerId(context)
 	if err != nil {
