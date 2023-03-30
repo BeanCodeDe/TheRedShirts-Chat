@@ -22,7 +22,8 @@ const player_id_param = "playerId"
 
 type (
 	MessageCreate struct {
-		Message string `json:"message" validate:"required"`
+		PlayerId uuid.UUID `json:"player_id" validate:"required"`
+		Message  string    `json:"message" validate:"required"`
 	}
 
 	Message struct {
@@ -44,7 +45,7 @@ func initChatInterface(group *echo.Group, api *EchoApi) {
 	group.PUT("/:"+lobby_id_param+message_path+"/:"+message_id_param, api.createMessage)
 	group.PUT("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.addPlayer)
 	group.DELETE("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.deletePlayer)
-	group.GET("/:"+lobby_id_param+message_path, api.getMessages)
+	group.GET("/:"+lobby_id_param+message_path+"/:"+number_id_param, api.getMessages)
 }
 
 func (api *EchoApi) createMessageId(context echo.Context) error {
@@ -57,7 +58,7 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 	logger := context.Get(logger_key).(*log.Entry)
 	logger.Debug("Create message")
 
-	message, lobbyId, messageId, playerId, err := bindMessageCreationDTO(context)
+	message, lobbyId, messageId, err := bindMessageCreationDTO(context)
 
 	if err != nil {
 		logger.Warnf("Error while binding message: %v", err)
@@ -65,7 +66,7 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 	}
 
 	coreMessage := mapMessageCreateToMessage(messageId, lobbyId, message)
-	err = api.core.CreateMessage(playerId, coreMessage)
+	err = api.core.CreateMessage(message.PlayerId, coreMessage)
 
 	if err != nil {
 		logger.Warnf("Error while creating message: %v", err)
@@ -146,30 +147,25 @@ func (api *EchoApi) getMessages(context echo.Context) error {
 	return context.JSON(http.StatusOK, mapToMessages(messages))
 }
 
-func bindMessageCreationDTO(context echo.Context) (message *MessageCreate, lobbyId uuid.UUID, messageId uuid.UUID, playerId uuid.UUID, err error) {
+func bindMessageCreationDTO(context echo.Context) (message *MessageCreate, lobbyId uuid.UUID, messageId uuid.UUID, err error) {
 	message = new(MessageCreate)
 	if err := context.Bind(message); err != nil {
-		return nil, uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not bind message, %v", err)
+		return nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not bind message, %v", err)
 	}
 	if err := context.Validate(message); err != nil {
-		return nil, uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not validate message, %v", err)
+		return nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not validate message, %v", err)
 	}
 	lobbyId, err = getLobbyId(context)
 	if err != nil {
-		return nil, uuid.Nil, uuid.Nil, uuid.Nil, err
+		return nil, uuid.Nil, uuid.Nil, err
 	}
 
 	messageId, err = getMessageId(context)
 	if err != nil {
-		return nil, uuid.Nil, uuid.Nil, uuid.Nil, err
+		return nil, uuid.Nil, uuid.Nil, err
 	}
 
-	playerId, err = getPlayerId(context)
-	if err != nil {
-		return nil, uuid.Nil, uuid.Nil, uuid.Nil, err
-	}
-
-	return message, lobbyId, messageId, playerId, nil
+	return message, lobbyId, messageId, nil
 }
 
 func bindPlayerCreationDTO(context echo.Context) (player *PlayerCreate, lobbyId uuid.UUID, playerId uuid.UUID, err error) {
