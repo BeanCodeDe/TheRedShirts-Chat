@@ -14,6 +14,7 @@ type (
 		ID         uuid.UUID `db:"id"`
 		SendTime   time.Time `db:"send_time"`
 		PlayerName string    `db:"player_name"`
+		PlayerTeam string    `db:"player_team"`
 		LobbyId    uuid.UUID `db:"lobby_id"`
 		Number     int       `db:"number"`
 		Message    string    `db:"message"`

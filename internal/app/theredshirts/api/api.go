@@ -45,9 +45,9 @@ func NewApi() (Api, error) {
 	initChatInterface(chatGroup, echoApi)
 
 	address := util.GetEnvWithFallback("ADDRESS", "0.0.0.0")
-	port, err := util.GetEnvIntWithFallback("PORT", 1203)
+	port, err := util.GetEnvIntWithFallback("PORT", 1204)
 	if err != nil {
-		return nil, fmt.Errorf("error while loading port from environment variable: %w", err)
+		return nil, fmt.Errorf("error while loading port from environment variable: %v", err)
 	}
 	url := fmt.Sprintf("%s:%d", address, port)
 	e.Logger.Fatal(e.Start(url))
@@ -64,7 +64,7 @@ func setLoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		correlationId := c.Request().Header.Get(correlation_id_header)
 		_, err := uuid.Parse(correlationId)
 		if err != nil {
-			log.Warn("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
+			log.Warnf("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
 			correlationId = "WRONG FORMAT"
 		}
 		logger := log.WithFields(log.Fields{

@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/db"
 	"github.com/google/uuid"
@@ -24,6 +25,14 @@ func (core CoreFacade) createPlayer(tx db.DBTx, player *Player) error {
 			return fmt.Errorf("error while creating player: %v", err)
 		}
 	}
+
+	message := &Message{ID: uuid.New(), SendTime: time.Now(), PlayerName: "Lobby", LobbyId: player.LobbyId, Message: fmt.Sprintf("Player %s joint team %s", player.Name, player.Team)}
+	if err := tx.CreateMessage(mapToDBMessage(message)); err != nil {
+		if !errors.Is(err, db.ErrMessageAlreadyExists) {
+			return fmt.Errorf("error while creating message: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -38,6 +47,19 @@ func (core CoreFacade) DeletePlayer(playerId uuid.UUID) error {
 }
 
 func (core CoreFacade) deletePlayer(tx db.DBTx, playerId uuid.UUID) error {
+
+	player, err := core.getPlayer(tx, playerId)
+	if err != nil {
+		return err
+	}
+
+	message := &Message{ID: uuid.New(), SendTime: time.Now(), PlayerName: "Lobby", LobbyId: player.LobbyId, Message: fmt.Sprintf("Player %s left lobby", player.Name)}
+	if err := tx.CreateMessage(mapToDBMessage(message)); err != nil {
+		if !errors.Is(err, db.ErrMessageAlreadyExists) {
+			return fmt.Errorf("error while creating message: %v", err)
+		}
+	}
+
 	if err := tx.DeletePlayer(playerId); err != nil {
 		return fmt.Errorf("an error accourd while deleting player [%v]: %v", playerId, err)
 	}

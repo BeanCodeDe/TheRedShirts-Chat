@@ -14,6 +14,7 @@ import (
 
 const chat_root_path = "/chat"
 const message_path = "/message"
+const player_path = "/player"
 const message_id_param = "messageId"
 const number_id_param = "number"
 const lobby_id_param = "lobbyId"
@@ -33,17 +34,16 @@ type (
 	}
 
 	PlayerCreate struct {
-		ID   uuid.UUID `json:"id" validate:"required"`
-		Name string    `json:"name" validate:"required"`
-		Team string    `json:"team" validate:"required"`
+		Name string `json:"name" validate:"required"`
+		Team string `json:"team" validate:"required"`
 	}
 )
 
 func initChatInterface(group *echo.Group, api *EchoApi) {
 	group.POST("/:"+lobby_id_param+message_path, api.createMessageId)
 	group.PUT("/:"+lobby_id_param+message_path+"/:"+message_id_param, api.createMessage)
-	group.PUT("/:"+lobby_id_param, api.addPlayer)
-	group.DELETE("/:"+lobby_id_param, api.deletePlayer)
+	group.PUT("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.addPlayer)
+	group.DELETE("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.deletePlayer)
 	group.GET("/:"+lobby_id_param+message_path, api.getMessages)
 }
 
@@ -79,13 +79,13 @@ func (api *EchoApi) addPlayer(context echo.Context) error {
 	logger := context.Get(logger_key).(*log.Entry)
 	logger.Debug("Create player")
 
-	player, lobbyId, err := bindPlayerCreationDTO(context)
+	player, lobbyId, playerId, err := bindPlayerCreationDTO(context)
 	if err != nil {
 		logger.Warnf("Error while binding player: %v", err)
 		return echo.ErrBadRequest
 	}
 
-	corePlayer := mapPlayerCreateToPlayer(lobbyId, player)
+	corePlayer := mapPlayerCreateToPlayer(lobbyId, playerId, player)
 	err = api.core.CreatePlayer(corePlayer)
 
 	if err != nil {
@@ -172,20 +172,25 @@ func bindMessageCreationDTO(context echo.Context) (message *MessageCreate, lobby
 	return message, lobbyId, messageId, playerId, nil
 }
 
-func bindPlayerCreationDTO(context echo.Context) (player *PlayerCreate, lobbyId uuid.UUID, err error) {
+func bindPlayerCreationDTO(context echo.Context) (player *PlayerCreate, lobbyId uuid.UUID, playerId uuid.UUID, err error) {
 	player = new(PlayerCreate)
 	if err := context.Bind(player); err != nil {
-		return nil, uuid.Nil, fmt.Errorf("could not bind player, %v", err)
+		return nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not bind player, %v", err)
 	}
 	if err := context.Validate(player); err != nil {
-		return nil, uuid.Nil, fmt.Errorf("could not validate player, %v", err)
+		return nil, uuid.Nil, uuid.Nil, fmt.Errorf("could not validate player, %v", err)
 	}
 	lobbyId, err = getLobbyId(context)
 	if err != nil {
-		return nil, uuid.Nil, err
+		return nil, uuid.Nil, uuid.Nil, err
 	}
 
-	return player, lobbyId, nil
+	playerId, err = getPlayerId(context)
+	if err != nil {
+		return nil, uuid.Nil, uuid.Nil, err
+	}
+
+	return player, lobbyId, playerId, nil
 }
 
 func getLobbyId(context echo.Context) (uuid.UUID, error) {
@@ -213,7 +218,7 @@ func getNumber(context echo.Context) (int, error) {
 }
 
 func getPlayerId(context echo.Context) (uuid.UUID, error) {
-	playerId, err := uuid.Parse(context.FormValue(player_id_param))
+	playerId, err := uuid.Parse(context.Param(player_id_param))
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("error while binding playerId: %v", err)
 	}
@@ -236,6 +241,6 @@ func mapToMessage(message *core.Message) *Message {
 	return &Message{ID: message.ID, SendTime: message.SendTime, PlayerName: message.PlayerName, Number: message.Number, Message: message.Message}
 }
 
-func mapPlayerCreateToPlayer(lobbyId uuid.UUID, player *PlayerCreate) *core.Player {
-	return &core.Player{ID: player.ID, LobbyId: lobbyId, Name: player.Name, Team: player.Team}
+func mapPlayerCreateToPlayer(lobbyId uuid.UUID, playerId uuid.UUID, player *PlayerCreate) *core.Player {
+	return &core.Player{ID: playerId, LobbyId: lobbyId, Name: player.Name, Team: player.Team}
 }

@@ -13,4 +13,4 @@ FROM alpine:3.14
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=0 /app/theredshirts-chat ./
-CMD ["./theredshirts-lobby"]  
+CMD ["./theredshirts-chat"]  

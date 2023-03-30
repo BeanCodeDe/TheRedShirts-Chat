@@ -32,6 +32,7 @@ type (
 		ID         uuid.UUID
 		SendTime   time.Time
 		PlayerName string
+		PlayerTeam string
 		LobbyId    uuid.UUID
 		Number     int
 		Message    string

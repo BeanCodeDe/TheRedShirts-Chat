@@ -2,10 +2,7 @@ module github.com/BeanCodeDe/TheRedShirts-Chat
 
 go 1.20
 
-require (
-	github.com/jackc/pgconn v1.14.0
-	gopkg.in/go-playground/validator.v9 v9.31.0
-)
+require github.com/jackc/pgconn v1.14.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -19,22 +16,18 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	github.com/BeanCodeDe/authi v0.5.0
 	github.com/georgysavva/scany v1.2.1
-	github.com/go-co-op/gocron v1.19.0
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang-migrate/migrate v3.5.4+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
@@ -49,7 +42,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/crypto v0.6.0
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
