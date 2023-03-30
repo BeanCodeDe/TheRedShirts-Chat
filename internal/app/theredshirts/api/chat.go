@@ -101,7 +101,7 @@ func (api *EchoApi) deletePlayer(context echo.Context) error {
 	logger := context.Get(logger_key).(*log.Entry)
 	logger.Debug("delete player")
 
-	playerId, err := getPlayerId(context)
+	playerId, err := getParamPlayerId(context)
 	if err != nil {
 		logger.Warnf("Error while binding playerId: %v", err)
 		return echo.ErrBadRequest
@@ -127,7 +127,7 @@ func (api *EchoApi) getMessages(context echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	playerId, err := getPlayerId(context)
+	playerId, err := getQueryPlayerId(context)
 	if err != nil {
 		logger.Warnf("Error while binding playerId: %v", err)
 		return echo.ErrBadRequest
@@ -181,7 +181,7 @@ func bindPlayerCreationDTO(context echo.Context) (player *PlayerCreate, lobbyId 
 		return nil, uuid.Nil, uuid.Nil, err
 	}
 
-	playerId, err = getPlayerId(context)
+	playerId, err = getParamPlayerId(context)
 	if err != nil {
 		return nil, uuid.Nil, uuid.Nil, err
 	}
@@ -213,7 +213,15 @@ func getNumber(context echo.Context) (int, error) {
 	return number, nil
 }
 
-func getPlayerId(context echo.Context) (uuid.UUID, error) {
+func getQueryPlayerId(context echo.Context) (uuid.UUID, error) {
+	playerId, err := uuid.Parse(context.QueryParam(player_id_param))
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("error while binding playerId: %v", err)
+	}
+	return playerId, nil
+}
+
+func getParamPlayerId(context echo.Context) (uuid.UUID, error) {
 	playerId, err := uuid.Parse(context.Param(player_id_param))
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("error while binding playerId: %v", err)

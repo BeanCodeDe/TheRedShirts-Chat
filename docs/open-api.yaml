@@ -95,6 +95,13 @@ paths:
           schema:
             type: string
             format: integer
+        - name: playerId
+          in: query
+          description: Player ID
+          required: true
+          schema:
+            type: string
+            format: UUID
       responses:
         '200':
           description: |-
