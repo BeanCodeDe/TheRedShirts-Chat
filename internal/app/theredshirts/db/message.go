@@ -14,7 +14,7 @@ import (
 const (
 	message_table_name                  = "message"
 	create_message_sql                  = "INSERT INTO %s.%s(id, send_time, player_name, player_team, lobby_id, message) VALUES($1, $2, $3, $4, $5, $6)"
-	select_messages_by_lobby_and_number = "SELECT id, send_time, player_name,player_team, lobby_id, number, message FROM %s.%s WHERE lobby_id = $1 AND number = $2"
+	select_messages_by_lobby_and_number = "SELECT id, send_time, player_name,player_team, lobby_id, number, message FROM %s.%s WHERE lobby_id = $1 AND number > $2"
 )
 
 var (
