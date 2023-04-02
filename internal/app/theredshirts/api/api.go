@@ -3,8 +3,8 @@ package api
 import (
 	"fmt"
 
-	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/core"
-	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/util"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/core"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	logger_key            = "logger"
+	context_key           = "context"
 	correlation_id_header = "X-Correlation-ID"
 )
 
@@ -38,7 +38,7 @@ func NewApi() (Api, error) {
 	echoApi := &EchoApi{core: core}
 	e := echo.New()
 	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	e.Use(middleware.CORS(), setLoggerMiddleware, middleware.Recover())
+	e.Use(middleware.CORS(), setContextMiddleware, middleware.Recover(), middleware.RequestLoggerWithConfig(getRequestLoggingConfig()))
 	e.Validator = &CustomValidator{validator: validator.New()}
 
 	chatGroup := e.Group(message_root_path)
@@ -59,7 +59,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
 }
 
-func setLoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func setContextMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		correlationId := c.Request().Header.Get(correlation_id_header)
 		_, err := uuid.Parse(correlationId)
@@ -71,7 +71,19 @@ func setLoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			correlation_id_header: correlationId,
 		})
 
-		c.Set(logger_key, logger)
+		c.Set(context_key, &util.Context{CorrelationId: correlationId, Logger: logger})
 		return next(c)
+	}
+}
+
+func getRequestLoggingConfig() middleware.RequestLoggerConfig {
+	return middleware.RequestLoggerConfig{
+		LogStatus: true,
+		LogURI:    true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			context := c.Get(context_key).(*util.Context)
+			context.Logger.Debugf("REQUEST: uri: %v, status: %v, query-params: %v, headers: %v, latency: %v", v.URI, v.Status, v.QueryParams, v.Headers, v.Latency)
+			return nil
+		},
 	}
 }

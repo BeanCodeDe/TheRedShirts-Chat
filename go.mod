@@ -1,4 +1,4 @@
-module github.com/BeanCodeDe/TheRedShirts-Chat
+module github.com/BeanCodeDe/TheRedShirts-Message
 
 go 1.20
 

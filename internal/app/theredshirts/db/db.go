@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/util"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/google/uuid"
 )
 
@@ -19,12 +19,6 @@ type (
 		Message  map[string]interface{} `db:"message"`
 	}
 
-	Player struct {
-		ID          uuid.UUID `db:"id"`
-		LobbyId     uuid.UUID `db:"lobby_id"`
-		LastRefresh time.Time `db:"last_refresh"`
-	}
-
 	DB interface {
 		Close()
 		StartTransaction() (DBTx, error)
@@ -35,12 +29,6 @@ type (
 		//Message
 		CreateMessage(message *Message) error
 		GetMessages(lobbyId uuid.UUID, number int) ([]*Message, error)
-
-		//Player
-		CreatePlayer(player *Player) error
-		UpdatePlayerLastRefresh(id uuid.UUID, lastRefresh time.Time) error
-		DeletePlayer(id uuid.UUID) error
-		GetPlayer(id uuid.UUID) (*Player, error)
 	}
 )
 

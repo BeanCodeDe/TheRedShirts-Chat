@@ -5,15 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/core"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/core"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 const message_root_path = "/message"
 const message_path = "/msg"
-const player_path = "/player"
 const message_id_param = "messageId"
 const number_id_param = "number"
 const lobby_id_param = "lobbyId"
@@ -39,34 +38,24 @@ type (
 		Topic    string                 `json:"topic"`
 		Message  map[string]interface{} `json:"message"`
 	}
-
-	PlayerCreate struct {
-		ID      uuid.UUID `param:"playerId" validate:"required"`
-		LobbyId uuid.UUID `param:"lobbyId" validate:"required"`
-	}
-
-	PlayerDelete struct {
-		ID      uuid.UUID `param:"playerId" validate:"required"`
-		LobbyId uuid.UUID `param:"lobbyId" validate:"required"`
-	}
 )
 
 func initChatInterface(group *echo.Group, api *EchoApi) {
 	group.POST("/:"+lobby_id_param+message_path, api.createMessageId)
 	group.PUT("/:"+lobby_id_param+message_path+"/:"+message_id_param, api.createMessage)
 	group.GET("/:"+lobby_id_param+message_path+"/:"+number_id_param, api.getMessages)
-	group.PUT("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.addPlayer)
-	group.DELETE("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.deletePlayer)
 }
 
 func (api *EchoApi) createMessageId(context echo.Context) error {
-	logger := context.Get(logger_key).(*log.Entry)
+	customContext := context.Get(context_key).(*util.Context)
+	logger := customContext.Logger
 	logger.Debug("Create message Id")
 	return context.String(http.StatusCreated, uuid.NewString())
 }
 
 func (api *EchoApi) createMessage(context echo.Context) error {
-	logger := context.Get(logger_key).(*log.Entry)
+	customContext := context.Get(context_key).(*util.Context)
+	logger := customContext.Logger
 	logger.Debug("Create message")
 
 	message, err := bindMessageCreationDTO(context)
@@ -81,7 +70,7 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 	}
 
 	coreMessage := mapMessageCreateToMessage(message)
-	err = api.core.CreateMessage(playerId, coreMessage)
+	err = api.core.CreateMessage(customContext, playerId, coreMessage)
 
 	if err != nil {
 		logger.Warnf("Error while creating message: %v", err)
@@ -91,48 +80,9 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 	return context.NoContent(http.StatusCreated)
 }
 
-func (api *EchoApi) addPlayer(context echo.Context) error {
-	logger := context.Get(logger_key).(*log.Entry)
-	logger.Debug("Create player")
-
-	player, err := bindPlayerCreationDTO(context)
-	if err != nil {
-		logger.Warnf("Error while binding player: %v", err)
-		return echo.ErrBadRequest
-	}
-
-	corePlayer := mapPlayerCreateToPlayer(player)
-	err = api.core.CreatePlayer(corePlayer)
-
-	if err != nil {
-		logger.Warnf("Error while creating player: %v", err)
-		return echo.ErrInternalServerError
-	}
-
-	return context.NoContent(http.StatusCreated)
-}
-
-func (api *EchoApi) deletePlayer(context echo.Context) error {
-	logger := context.Get(logger_key).(*log.Entry)
-	logger.Debug("delete player")
-
-	player, err := bindPlayerDelete(context)
-	if err != nil {
-		logger.Warnf("Error while binding playerId: %v", err)
-		return echo.ErrBadRequest
-	}
-
-	err = api.core.DeletePlayer(player.ID)
-	if err != nil {
-		logger.Warnf("Error while deleting player: %v", err)
-		return echo.ErrInternalServerError
-	}
-
-	return context.NoContent(http.StatusNoContent)
-}
-
 func (api *EchoApi) getMessages(context echo.Context) error {
-	logger := context.Get(logger_key).(*log.Entry)
+	customContext := context.Get(context_key).(*util.Context)
+	logger := customContext.Logger
 	logger.Debug("Get all messages")
 
 	message, err := bindMessageGet(context)
@@ -147,7 +97,7 @@ func (api *EchoApi) getMessages(context echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	messages, err := api.core.GetMessages(playerId, message.LobbyId, message.Number)
+	messages, err := api.core.GetMessages(customContext, playerId, message.LobbyId, message.Number)
 	if err != nil {
 		logger.Warnf("Error while loading messages: %v", err)
 		return echo.ErrInternalServerError
@@ -179,30 +129,6 @@ func bindMessageGet(context echo.Context) (message *MessageGet, err error) {
 	return message, nil
 }
 
-func bindPlayerCreationDTO(context echo.Context) (player *PlayerCreate, err error) {
-	player = new(PlayerCreate)
-	if err := context.Bind(player); err != nil {
-		return nil, fmt.Errorf("could not bind player, %v", err)
-	}
-	if err := context.Validate(player); err != nil {
-		return nil, fmt.Errorf("could not validate player, %v", err)
-	}
-
-	return player, nil
-}
-
-func bindPlayerDelete(context echo.Context) (player *PlayerDelete, err error) {
-	player = new(PlayerDelete)
-	if err := context.Bind(player); err != nil {
-		return nil, fmt.Errorf("could not bind player, %v", err)
-	}
-	if err := context.Validate(player); err != nil {
-		return nil, fmt.Errorf("could not validate player, %v", err)
-	}
-
-	return player, nil
-}
-
 func getQueryPlayerId(context echo.Context) (uuid.UUID, error) {
 	playerId, err := uuid.Parse(context.QueryParam(player_id_param))
 	if err != nil {
@@ -225,8 +151,4 @@ func mapToMessages(coreMessages []*core.Message) []*Message {
 
 func mapToMessage(message *core.Message) *Message {
 	return &Message{ID: message.ID, SendTime: message.SendTime, Number: message.Number, Topic: message.Topic, Message: message.Message}
-}
-
-func mapPlayerCreateToPlayer(player *PlayerCreate) *core.Player {
-	return &core.Player{ID: player.ID, LobbyId: player.LobbyId, LastRefresh: time.Now()}
 }

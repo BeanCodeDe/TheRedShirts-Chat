@@ -5,22 +5,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/db"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/db"
+	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/google/uuid"
 )
 
-func (core CoreFacade) CreateMessage(playerId uuid.UUID, message *Message) error {
+func (core CoreFacade) CreateMessage(context *util.Context, playerId uuid.UUID, message *Message) error {
 	tx, err := core.db.StartTransaction()
 	defer tx.HandleTransaction(err)
 	if err != nil {
 		return fmt.Errorf("something went wrong while creating transaction: %v", err)
 	}
-	err = core.createMessage(tx, playerId, message)
+	err = core.createMessage(context, tx, playerId, message)
 	return err
 }
 
-func (core CoreFacade) createMessage(tx db.DBTx, playerId uuid.UUID, message *Message) error {
-	player, err := tx.GetPlayer(playerId)
+func (core CoreFacade) createMessage(context *util.Context, tx db.DBTx, playerId uuid.UUID, message *Message) error {
+	player, err := core.lobbyAdapter.GetPlayer(context, playerId)
 	if err != nil {
 		return fmt.Errorf("error while getting player %v: %v", playerId, err)
 	}
@@ -37,16 +38,16 @@ func (core CoreFacade) createMessage(tx db.DBTx, playerId uuid.UUID, message *Me
 	return nil
 }
 
-func (core CoreFacade) GetMessages(playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
+func (core CoreFacade) GetMessages(context *util.Context, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
 	tx, err := core.db.StartTransaction()
 	defer tx.HandleTransaction(err)
 
-	messages, err := core.getMessages(tx, playerId, lobbyId, number)
+	messages, err := core.getMessages(context, tx, playerId, lobbyId, number)
 	return messages, err
 }
 
-func (core CoreFacade) getMessages(tx db.DBTx, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
-	player, err := tx.GetPlayer(playerId)
+func (core CoreFacade) getMessages(context *util.Context, tx db.DBTx, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
+	player, err := core.lobbyAdapter.GetPlayer(context, playerId)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting player %v: %v", playerId, err)
 	}
@@ -59,8 +60,8 @@ func (core CoreFacade) getMessages(tx db.DBTx, playerId uuid.UUID, lobbyId uuid.
 		return nil, fmt.Errorf("something went wrong while loading messages in lobby [%v] from database: %v", lobbyId, err)
 	}
 
-	if err := core.updatePlayerLastRefresh(tx, playerId); err != nil {
-		return nil, err
+	if err := core.lobbyAdapter.UpdatePlayerLastRefresh(context, playerId); err != nil {
+		return nil, fmt.Errorf("error while updating player %v: %v", playerId, err)
 	}
 
 	return mapToMessages(messages), nil
