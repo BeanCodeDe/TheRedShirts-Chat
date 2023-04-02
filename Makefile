@@ -1,5 +1,5 @@
-SRC_PATH?=./cmd/theredshirts-chat
-APP_NAME?=theredshirts-chat
+SRC_PATH?=./cmd/theredshirts-message
+APP_NAME?=theredshirts-message
 DOCKER_PATH?=./build/Dockerfile
 
 app.build:
