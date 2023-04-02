@@ -41,7 +41,7 @@ func newPostgresConnection() (DB, error) {
 	host := util.GetEnvWithFallback("POSTGRES_HOST", "postgres")
 	port, err := util.GetEnvIntWithFallback("POSTGRES_PORT", 5432)
 	options := util.GetEnvWithFallback("POSTGRES_OPTIONS", "sslmode=disable")
-	migrationOptions := util.GetEnvWithFallback("POSTGRES_MIGRATION_OPTIONS", "&x-migrations-table=theredshirts-chat")
+	migrationOptions := util.GetEnvWithFallback("POSTGRES_MIGRATION_OPTIONS", "&x-migrations-table=theredshirts-message")
 
 	if err != nil {
 		return nil, fmt.Errorf("port is not a number: %v", err)

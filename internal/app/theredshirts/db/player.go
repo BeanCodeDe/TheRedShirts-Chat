@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/google/uuid"
@@ -13,9 +14,10 @@ import (
 
 const (
 	player_table_name              = "player"
-	create_player_sql              = "INSERT INTO %s.%s(id, lobby_id, name, team) VALUES($1, $2, $3, $4)"
+	create_player_sql              = "INSERT INTO %s.%s(id, lobby_id, last_refresh) VALUES($1, $2, $3)"
+	update_player_last_refresh_sql = "UPDATE %s.%s SET last_refresh = $2 WHERE id = $1"
 	delete_player_sql              = "DELETE FROM %s.%s WHERE id = $1"
-	select_player_by_player_id_sql = "SELECT id, lobby_id, name, team FROM %s.%s WHERE id = $1"
+	select_player_by_player_id_sql = "SELECT id, lobby_id, last_refresh FROM %s.%s WHERE id = $1"
 )
 
 var (
@@ -23,7 +25,7 @@ var (
 )
 
 func (tx *postgresTransaction) CreatePlayer(player *Player) error {
-	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(create_player_sql, schema_name, player_table_name), player.ID, player.LobbyId, player.Name, player.Team); err != nil {
+	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(create_player_sql, schema_name, player_table_name), player.ID, player.LobbyId, player.LastRefresh); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
@@ -33,6 +35,13 @@ func (tx *postgresTransaction) CreatePlayer(player *Player) error {
 		}
 
 		return fmt.Errorf("unknown error when inserting player: %v", err)
+	}
+	return nil
+}
+
+func (tx *postgresTransaction) UpdatePlayerLastRefresh(id uuid.UUID, lastRefresh time.Time) error {
+	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(update_player_last_refresh_sql, schema_name, player_table_name), id, lastRefresh); err != nil {
+		return fmt.Errorf("unknown error when updating last refresh of player: %v", err)
 	}
 	return nil
 }

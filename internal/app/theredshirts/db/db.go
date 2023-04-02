@@ -11,20 +11,18 @@ import (
 
 type (
 	Message struct {
-		ID         uuid.UUID `db:"id"`
-		SendTime   time.Time `db:"send_time"`
-		PlayerName string    `db:"player_name"`
-		PlayerTeam string    `db:"player_team"`
-		LobbyId    uuid.UUID `db:"lobby_id"`
-		Number     int       `db:"number"`
-		Message    string    `db:"message"`
+		ID       uuid.UUID              `db:"id"`
+		SendTime time.Time              `db:"send_time"`
+		LobbyId  uuid.UUID              `db:"lobby_id"`
+		Number   int                    `db:"number"`
+		Topic    string                 `db:"topic"`
+		Message  map[string]interface{} `db:"message"`
 	}
 
 	Player struct {
-		ID      uuid.UUID `db:"id"`
-		LobbyId uuid.UUID `db:"lobby_id"`
-		Name    string    `db:"name"`
-		Team    string    `db:"team"`
+		ID          uuid.UUID `db:"id"`
+		LobbyId     uuid.UUID `db:"lobby_id"`
+		LastRefresh time.Time `db:"last_refresh"`
 	}
 
 	DB interface {
@@ -40,6 +38,7 @@ type (
 
 		//Player
 		CreatePlayer(player *Player) error
+		UpdatePlayerLastRefresh(id uuid.UUID, lastRefresh time.Time) error
 		DeletePlayer(id uuid.UUID) error
 		GetPlayer(id uuid.UUID) (*Player, error)
 	}

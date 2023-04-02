@@ -29,20 +29,18 @@ type (
 
 	//Objects
 	Message struct {
-		ID         uuid.UUID
-		SendTime   time.Time
-		PlayerName string
-		PlayerTeam string
-		LobbyId    uuid.UUID
-		Number     int
-		Message    string
+		ID       uuid.UUID
+		SendTime time.Time
+		LobbyId  uuid.UUID
+		Number   int
+		Topic    string
+		Message  map[string]interface{}
 	}
 
 	Player struct {
-		ID      uuid.UUID
-		LobbyId uuid.UUID
-		Name    string
-		Team    string
+		ID          uuid.UUID
+		LobbyId     uuid.UUID
+		LastRefresh time.Time
 	}
 )
 

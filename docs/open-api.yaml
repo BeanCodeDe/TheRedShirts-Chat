@@ -3,10 +3,10 @@ info:
   title: TheRedShirts-Chat Api 
   version: 1.0.0
 servers:
-  - url: http://localhost:1204
+  - url: http://localhost
 
 paths:
-  /chat/{lobbyId}/message:
+  /message/{lobbyId}/msg:
     post:
       tags:
         - Message
@@ -34,11 +34,11 @@ paths:
                 type: string
                 format: UUID
                 example: f455dea9-f8f2-42e6-bead-e97a3c329d8a
-  /chat/{lobbyId}/message/{messageId}:
+  /message/{lobbyId}/msg/{messageId}:
     put:
       tags:
         - Message
-      summary: Create ID for message
+      summary: Create message
       parameters:
         - in: header
           name: X-Correlation-ID
@@ -59,6 +59,13 @@ paths:
           schema:
             type: string
             format: UUID
+        - name: playerId
+          in: query
+          description: Player ID
+          required: true
+          schema:
+            type: string
+            format: UUID
       requestBody:
         description: Body with message to be created
         required: true
@@ -70,7 +77,7 @@ paths:
         '201':
           description: |-
             Empty response 
-  /chat/{lobbyId}/message/{number}:
+  /message/{lobbyId}/msg/{number}:
     get:
       tags:
         - Message

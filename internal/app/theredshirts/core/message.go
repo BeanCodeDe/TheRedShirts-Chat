@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/BeanCodeDe/TheRedShirts-Chat/internal/app/theredshirts/db"
 	"github.com/google/uuid"
@@ -58,6 +59,10 @@ func (core CoreFacade) getMessages(tx db.DBTx, playerId uuid.UUID, lobbyId uuid.
 		return nil, fmt.Errorf("something went wrong while loading messages in lobby [%v] from database: %v", lobbyId, err)
 	}
 
+	if err := core.updatePlayerLastRefresh(tx, playerId); err != nil {
+		return nil, err
+	}
+
 	return mapToMessages(messages), nil
 }
 
@@ -70,9 +75,25 @@ func mapToMessages(dbMessages []*db.Message) []*Message {
 }
 
 func mapToMessage(message *db.Message) *Message {
-	return &Message{ID: message.ID, SendTime: message.SendTime, PlayerName: message.PlayerName, LobbyId: message.LobbyId, Number: message.Number, Message: message.Message}
+	return &Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, Number: message.Number, Topic: message.Topic, Message: message.Message}
 }
 
 func mapToDBMessage(message *Message) *db.Message {
-	return &db.Message{ID: message.ID, SendTime: message.SendTime, PlayerName: message.PlayerName, LobbyId: message.LobbyId, Number: message.Number, Message: message.Message}
+	return &db.Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, Number: message.Number, Topic: message.Topic, Message: message.Message}
+}
+
+func getPlayerJoinsMessage(lobbyId uuid.UUID) *Message {
+	basicMessage := getBasicMessage(lobbyId)
+	basicMessage.Topic = "PLAYER_JOIN"
+	return basicMessage
+}
+
+func getPlayerLeavesMessage(lobbyId uuid.UUID) *Message {
+	basicMessage := getBasicMessage(lobbyId)
+	basicMessage.Topic = "PLAYER_LEAVES"
+	return basicMessage
+}
+
+func getBasicMessage(lobbyId uuid.UUID) *Message {
+	return &Message{ID: uuid.New(), SendTime: time.Now(), LobbyId: lobbyId}
 }
