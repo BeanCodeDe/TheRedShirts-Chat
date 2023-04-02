@@ -33,7 +33,7 @@ type (
 )
 
 const (
-	schema_name = "theredshirts_chat"
+	schema_name = "theredshirts_message"
 )
 
 func NewConnection() (DB, error) {

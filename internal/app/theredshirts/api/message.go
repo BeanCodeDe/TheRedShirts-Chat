@@ -63,7 +63,7 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 		logger.Warnf("Error while binding message: %v", err)
 		return echo.ErrBadRequest
 	}
-	playerId, err := getQueryPlayerId(context)
+	playerId, err := getHeaderPlayerId(context)
 	if err != nil {
 		logger.Warnf("Error while binding playerId: %v", err)
 		return echo.ErrBadRequest
@@ -91,7 +91,7 @@ func (api *EchoApi) getMessages(context echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	playerId, err := getQueryPlayerId(context)
+	playerId, err := getHeaderPlayerId(context)
 	if err != nil {
 		logger.Warnf("Error while binding playerId: %v", err)
 		return echo.ErrBadRequest
@@ -129,8 +129,8 @@ func bindMessageGet(context echo.Context) (message *MessageGet, err error) {
 	return message, nil
 }
 
-func getQueryPlayerId(context echo.Context) (uuid.UUID, error) {
-	playerId, err := uuid.Parse(context.QueryParam(player_id_param))
+func getHeaderPlayerId(context echo.Context) (uuid.UUID, error) {
+	playerId, err := uuid.Parse(context.Request().Header.Get(player_id_param))
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("error while binding playerId: %v", err)
 	}
@@ -138,7 +138,7 @@ func getQueryPlayerId(context echo.Context) (uuid.UUID, error) {
 }
 
 func mapMessageCreateToMessage(message *MessageCreate) *core.Message {
-	return &core.Message{ID: message.ID, SendTime: time.Now(), LobbyId: message.LobbyId, Message: message.Message}
+	return &core.Message{ID: message.ID, SendTime: time.Now(), LobbyId: message.LobbyId, Topic: message.Topic, Message: message.Message}
 }
 
 func mapToMessages(coreMessages []*core.Message) []*Message {
