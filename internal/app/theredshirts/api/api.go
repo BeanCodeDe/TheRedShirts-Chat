@@ -41,11 +41,11 @@ func NewApi() (Api, error) {
 	e.Use(middleware.CORS(), setLoggerMiddleware, middleware.Recover())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	chatGroup := e.Group(chat_root_path)
+	chatGroup := e.Group(message_root_path)
 	initChatInterface(chatGroup, echoApi)
 
 	address := util.GetEnvWithFallback("ADDRESS", "0.0.0.0")
-	port, err := util.GetEnvIntWithFallback("PORT", 1204)
+	port, err := util.GetEnvIntWithFallback("PORT", 1203)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading port from environment variable: %v", err)
 	}

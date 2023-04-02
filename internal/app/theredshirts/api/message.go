@@ -54,9 +54,9 @@ type (
 func initChatInterface(group *echo.Group, api *EchoApi) {
 	group.POST("/:"+lobby_id_param+message_path, api.createMessageId)
 	group.PUT("/:"+lobby_id_param+message_path+"/:"+message_id_param, api.createMessage)
+	group.GET("/:"+lobby_id_param+message_path+"/:"+number_id_param, api.getMessages)
 	group.PUT("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.addPlayer)
 	group.DELETE("/:"+lobby_id_param+player_path+"/:"+player_id_param, api.deletePlayer)
-	group.GET("/:"+lobby_id_param+message_path+"/:"+number_id_param, api.getMessages)
 }
 
 func (api *EchoApi) createMessageId(context echo.Context) error {
