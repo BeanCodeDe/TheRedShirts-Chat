@@ -15,8 +15,9 @@ type (
 
 	//Facade
 	CoreFacade struct {
-		db           db.DB
-		lobbyAdapter *adapter.LobbyAdapter
+		db            db.DB
+		lobbyAdapter  *adapter.LobbyAdapter
+		lobbyPlayerId uuid.UUID
 	}
 
 	Core interface {
@@ -52,6 +53,10 @@ func NewCore() (Core, error) {
 		return nil, fmt.Errorf("error while initializing database: %v", err)
 	}
 	lobbyAdapter := adapter.NewLobbyAdapter()
-	core := &CoreFacade{db: db, lobbyAdapter: lobbyAdapter}
+	lobbyPlayerId, err := util.GetEnvUUID("LOBBY_USER")
+	if err != nil {
+		return nil, fmt.Errorf("error while loading lobby user env: %v", err)
+	}
+	core := &CoreFacade{db: db, lobbyAdapter: lobbyAdapter, lobbyPlayerId: lobbyPlayerId}
 	return core, nil
 }
