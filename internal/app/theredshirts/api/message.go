@@ -70,8 +70,8 @@ func (api *EchoApi) createMessage(context echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	coreMessage := mapMessageCreateToMessage(message)
-	err = api.core.CreateMessage(customContext, playerId, coreMessage)
+	coreMessage := mapMessageCreateToMessage(message, playerId)
+	err = api.core.CreateMessage(customContext, coreMessage)
 
 	if err != nil {
 		logger.Warnf("Error while creating message: %v", err)
@@ -138,8 +138,8 @@ func getHeaderPlayerId(context echo.Context) (uuid.UUID, error) {
 	return playerId, nil
 }
 
-func mapMessageCreateToMessage(message *MessageCreate) *core.Message {
-	return &core.Message{ID: message.ID, SendTime: time.Now(), LobbyId: message.LobbyId, Topic: message.Topic, Message: message.Message}
+func mapMessageCreateToMessage(message *MessageCreate, playerId uuid.UUID) *core.Message {
+	return &core.Message{ID: message.ID, PlayerId: playerId, SendTime: time.Now(), LobbyId: message.LobbyId, Topic: message.Topic, Message: message.Message}
 }
 
 func mapToMessages(coreMessages []*core.Message) []*Message {

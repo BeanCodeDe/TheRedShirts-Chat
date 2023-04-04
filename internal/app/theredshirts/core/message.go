@@ -9,25 +9,26 @@ import (
 	"github.com/google/uuid"
 )
 
-func (core CoreFacade) CreateMessage(context *util.Context, playerId uuid.UUID, message *Message) error {
+func (core CoreFacade) CreateMessage(context *util.Context, message *Message) error {
+	context.Logger.Debugf("Create Message: %+v", *message)
 	tx, err := core.db.StartTransaction()
 	defer tx.HandleTransaction(err)
 	if err != nil {
 		return fmt.Errorf("something went wrong while creating transaction: %v", err)
 	}
-	err = core.createMessage(context, tx, playerId, message)
+	err = core.createMessage(context, tx, message)
 	return err
 }
 
-func (core CoreFacade) createMessage(context *util.Context, tx db.DBTx, playerId uuid.UUID, message *Message) error {
-	if playerId != core.lobbyPlayerId {
-		player, err := core.lobbyAdapter.GetPlayer(context, playerId)
+func (core CoreFacade) createMessage(context *util.Context, tx db.DBTx, message *Message) error {
+	if message.PlayerId != core.lobbyPlayerId {
+		player, err := core.lobbyAdapter.GetPlayer(context, message.PlayerId)
 		if err != nil {
-			return fmt.Errorf("error while getting player %v: %v", playerId, err)
+			return fmt.Errorf("error while getting player %v: %v", message.PlayerId, err)
 		}
 
 		if player.LobbyId != message.LobbyId {
-			return fmt.Errorf("error player %v from lobby %v is not authorised to write in lobby %v", playerId, player.LobbyId, message.LobbyId)
+			return fmt.Errorf("error player %v from lobby %v is not authorised to write in lobby %v", message.PlayerId, player.LobbyId, message.LobbyId)
 		}
 	}
 

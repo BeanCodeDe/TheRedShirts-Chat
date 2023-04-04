@@ -22,7 +22,7 @@ type (
 
 	Core interface {
 		//Message
-		CreateMessage(context *util.Context, playerId uuid.UUID, message *Message) error
+		CreateMessage(context *util.Context, message *Message) error
 		GetMessages(context *util.Context, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error)
 	}
 
@@ -59,5 +59,6 @@ func NewCore() (Core, error) {
 		return nil, fmt.Errorf("error while loading lobby user env: %v", err)
 	}
 	core := &CoreFacade{db: db, lobbyAdapter: lobbyAdapter, lobbyPlayerId: lobbyPlayerId}
+	core.startCleanUp()
 	return core, nil
 }

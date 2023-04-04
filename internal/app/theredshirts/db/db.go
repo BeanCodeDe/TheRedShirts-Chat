@@ -30,6 +30,7 @@ type (
 		//Message
 		CreateMessage(message *Message) error
 		GetMessages(lobbyId uuid.UUID, toIgnoreplayerId uuid.UUID, number int) ([]*Message, error)
+		DeleteMessages(time time.Time) error
 	}
 )
 

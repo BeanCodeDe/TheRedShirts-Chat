@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/google/uuid"
@@ -15,6 +16,7 @@ const (
 	message_table_name                  = "message"
 	create_message_sql                  = "INSERT INTO %s.%s(id, send_time, lobby_id, player_id, topic, message) VALUES($1, $2, $3, $4, $5, $6)"
 	select_messages_by_lobby_and_number = "SELECT id, send_time, lobby_id, player_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND player_id != $2 AND number > $3"
+	delete_messages_by_older_then       = "DELETE FROM %s.%s WHERE send_time < $1"
 )
 
 var (
@@ -43,4 +45,11 @@ func (tx *postgresTransaction) GetMessages(lobbyId uuid.UUID, toIgnoreplayerId u
 	}
 
 	return messages, nil
+}
+
+func (tx *postgresTransaction) DeleteMessages(time time.Time) error {
+	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(delete_messages_by_older_then, schema_name, message_table_name), time); err != nil {
+		return fmt.Errorf("unknown error when deliting messages: %v", err)
+	}
+	return nil
 }
