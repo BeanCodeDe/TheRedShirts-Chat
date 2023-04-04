@@ -33,6 +33,7 @@ type (
 
 	Message struct {
 		ID       uuid.UUID              `json:"id"`
+		PlayerId uuid.UUID              `json:"player_id"`
 		SendTime time.Time              `json:"send_time"`
 		Number   int                    `json:"number"`
 		Topic    string                 `json:"topic"`
@@ -150,5 +151,5 @@ func mapToMessages(coreMessages []*core.Message) []*Message {
 }
 
 func mapToMessage(message *core.Message) *Message {
-	return &Message{ID: message.ID, SendTime: message.SendTime, Number: message.Number, Topic: message.Topic, Message: message.Message}
+	return &Message{ID: message.ID, PlayerId: message.PlayerId, SendTime: message.SendTime, Number: message.Number, Topic: message.Topic, Message: message.Message}
 }

@@ -56,7 +56,7 @@ func (core CoreFacade) getMessages(context *util.Context, tx db.DBTx, playerId u
 	if player.LobbyId != lobbyId {
 		return nil, fmt.Errorf("error player %v from lobby %v is not authorised to load messages from lobby %v", playerId, player.LobbyId, lobbyId)
 	}
-	messages, err := tx.GetMessages(lobbyId, number)
+	messages, err := tx.GetMessages(lobbyId, playerId, number)
 	if err != nil {
 		return nil, fmt.Errorf("something went wrong while loading messages in lobby [%v] from database: %v", lobbyId, err)
 	}
@@ -77,9 +77,9 @@ func mapToMessages(dbMessages []*db.Message) []*Message {
 }
 
 func mapToMessage(message *db.Message) *Message {
-	return &Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, Number: message.Number, Topic: message.Topic, Message: message.Message}
+	return &Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, PlayerId: message.PlayerId, Number: message.Number, Topic: message.Topic, Message: message.Message}
 }
 
 func mapToDBMessage(message *Message) *db.Message {
-	return &db.Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, Number: message.Number, Topic: message.Topic, Message: message.Message}
+	return &db.Message{ID: message.ID, SendTime: message.SendTime, LobbyId: message.LobbyId, PlayerId: message.PlayerId, Number: message.Number, Topic: message.Topic, Message: message.Message}
 }

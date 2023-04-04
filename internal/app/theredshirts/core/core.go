@@ -31,6 +31,7 @@ type (
 		ID       uuid.UUID
 		SendTime time.Time
 		LobbyId  uuid.UUID
+		PlayerId uuid.UUID
 		Number   int
 		Topic    string
 		Message  map[string]interface{}

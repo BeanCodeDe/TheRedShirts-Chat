@@ -13,8 +13,8 @@ import (
 
 const (
 	message_table_name                  = "message"
-	create_message_sql                  = "INSERT INTO %s.%s(id, send_time, lobby_id, topic, message) VALUES($1, $2, $3, $4, $5)"
-	select_messages_by_lobby_and_number = "SELECT id, send_time, lobby_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND number > $2"
+	create_message_sql                  = "INSERT INTO %s.%s(id, send_time, lobby_id, player_id, topic, message) VALUES($1, $2, $3, $4, $5, $6)"
+	select_messages_by_lobby_and_number = "SELECT id, send_time, lobby_id, player_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND player_id != $2 AND number > $3"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 )
 
 func (tx *postgresTransaction) CreateMessage(message *Message) error {
-	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(create_message_sql, schema_name, message_table_name), message.ID, message.SendTime, message.LobbyId, message.Topic, message.Message); err != nil {
+	if _, err := tx.tx.Exec(context.Background(), fmt.Sprintf(create_message_sql, schema_name, message_table_name), message.ID, message.SendTime, message.LobbyId, message.PlayerId, message.Topic, message.Message); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
@@ -36,9 +36,9 @@ func (tx *postgresTransaction) CreateMessage(message *Message) error {
 	return nil
 }
 
-func (tx *postgresTransaction) GetMessages(lobbyId uuid.UUID, number int) ([]*Message, error) {
+func (tx *postgresTransaction) GetMessages(lobbyId uuid.UUID, toIgnoreplayerId uuid.UUID, number int) ([]*Message, error) {
 	var messages []*Message
-	if err := pgxscan.Select(context.Background(), tx.tx, &messages, fmt.Sprintf(select_messages_by_lobby_and_number, schema_name, message_table_name), lobbyId, number); err != nil {
+	if err := pgxscan.Select(context.Background(), tx.tx, &messages, fmt.Sprintf(select_messages_by_lobby_and_number, schema_name, message_table_name), lobbyId, toIgnoreplayerId, number); err != nil {
 		return nil, fmt.Errorf("error while selecting all messages: %v", err)
 	}
 
