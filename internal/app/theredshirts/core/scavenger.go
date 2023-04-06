@@ -19,18 +19,18 @@ func (core CoreFacade) startCleanUp() {
 		})
 
 		tx, err := core.db.StartTransaction()
-		defer tx.HandleTransaction(err)
-
 		if err != nil {
 			logger.Warnf("something went wrong while creating transaction: %v", err)
 			return
 		}
+		defer tx.Rollback()
 
 		if err := tx.DeleteMessages(time.Now().Add(-30 * time.Second)); err != nil {
 			log.Warn("Error while deleting old messages: %v", err)
 			return
 		}
+		tx.Commit()
 	})
 
-	s.StartAsync()
+	//s.StartAsync()
 }

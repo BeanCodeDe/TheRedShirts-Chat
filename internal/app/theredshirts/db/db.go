@@ -26,7 +26,8 @@ type (
 	}
 
 	DBTx interface {
-		HandleTransaction(err error)
+		Commit() error
+		Rollback() error
 		//Message
 		CreateMessage(message *Message) error
 		GetMessages(lobbyId uuid.UUID, toIgnoreplayerId uuid.UUID, number int) ([]*Message, error)

@@ -12,12 +12,17 @@ import (
 func (core CoreFacade) CreateMessage(context *util.Context, message *Message) error {
 	context.Logger.Debugf("Create Message: %+v", *message)
 	tx, err := core.db.StartTransaction()
-	defer tx.HandleTransaction(err)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 	if err != nil {
 		return fmt.Errorf("something went wrong while creating transaction: %v", err)
 	}
-	err = core.createMessage(context, tx, message)
-	return err
+	if err := core.createMessage(context, tx, message); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (core CoreFacade) createMessage(context *util.Context, tx db.DBTx, message *Message) error {
@@ -42,10 +47,16 @@ func (core CoreFacade) createMessage(context *util.Context, tx db.DBTx, message 
 
 func (core CoreFacade) GetMessages(context *util.Context, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
 	tx, err := core.db.StartTransaction()
-	defer tx.HandleTransaction(err)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
 
 	messages, err := core.getMessages(context, tx, playerId, lobbyId, number)
-	return messages, err
+	if err != nil {
+		return nil, err
+	}
+	return messages, tx.Commit()
 }
 
 func (core CoreFacade) getMessages(context *util.Context, tx db.DBTx, playerId uuid.UUID, lobbyId uuid.UUID, number int) ([]*Message, error) {
