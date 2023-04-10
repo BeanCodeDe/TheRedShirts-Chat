@@ -7,6 +7,7 @@ import (
 	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
+	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"
@@ -37,12 +38,16 @@ func NewApi() (Api, error) {
 
 	echoApi := &EchoApi{core: core}
 	e := echo.New()
+	e.HideBanner = true
 	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
 	e.Use(middleware.CORS(), setContextMiddleware, middleware.Recover())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
 	chatGroup := e.Group(message_root_path)
 	initChatInterface(chatGroup, echoApi)
+
+	prom := prometheus.NewPrometheus("message", nil)
+	prom.Use(e)
 
 	address := util.GetEnvWithFallback("ADDRESS", "0.0.0.0")
 	port, err := util.GetEnvIntWithFallback("PORT", 1203)
@@ -64,7 +69,7 @@ func setContextMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		correlationId := c.Request().Header.Get(correlation_id_header)
 		_, err := uuid.Parse(correlationId)
 		if err != nil {
-			log.Warnf("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
+			log.Infof("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
 			correlationId = "WRONG FORMAT"
 		}
 		logger := log.WithFields(log.Fields{
