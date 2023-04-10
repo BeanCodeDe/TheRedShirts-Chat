@@ -1,153 +1,153 @@
-openapi: "3.0.3"
-info:
-  title: TheRedShirts-Chat Api 
-  version: 1.0.0
-servers:
-  - url: http://localhost:1203
+  openapi: "3.0.3"
+  info:
+    title: TheRedShirts-Chat Api 
+    version: 1.0.0
+  servers:
+    - url: http://localhost:1203
 
-paths:
-  /message/{lobbyId}/msg:
-    post:
-      tags:
-        - Message
-      summary: Create ID for message
-      parameters:
-        - in: header
-          name: X-Correlation-ID
-          schema:
-            type: string
-            format: uuid
-        - name: lobbyId
-          in: path
-          description: Lobby ID
-          required: true
-          schema:
-            type: string
-            format: UUID
-      responses:
-        '201':
-          description: |-
-            Response with UUID for the lobby
-          content:
-            text/plain:
-              schema:
-                type: string
-                format: UUID
-                example: f455dea9-f8f2-42e6-bead-e97a3c329d8a
-  /message/{lobbyId}/msg/{messageId}:
-    put:
-      tags:
-        - Message
-      summary: Create message
-      parameters:
-        - in: header
-          name: X-Correlation-ID
-          schema:
-            type: string
-            format: uuid
-        - name: lobbyId
-          in: path
-          description: Lobby ID
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: messageId
-          in: path
-          description: Message ID
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: playerId
-          in: header
-          description: Player ID
-          required: true
-          schema:
-            type: string
-            format: UUID
-      requestBody:
-        description: Body with message to be created
-        required: true
-        content:
-          application/json:
+  paths:
+    /message/{lobbyId}/msg:
+      post:
+        tags:
+          - Message
+        summary: Create ID for message
+        parameters:
+          - in: header
+            name: X-Correlation-ID
             schema:
-              $ref: '#/components/schemas/MessageCreate'
-      responses:
-        '201':
-          description: |-
-            Empty response 
-  /message/{lobbyId}/msg/{number}:
-    get:
-      tags:
-        - Message
-      summary: Get all messages after number
-      parameters:
-        - in: header
-          name: X-Correlation-ID
-          schema:
-            type: string
-            format: uuid
-        - name: lobbyId
-          in: path
-          description: Lobby ID
+              type: string
+              format: uuid
+          - name: lobbyId
+            in: path
+            description: Lobby ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+        responses:
+          '201':
+            description: |-
+              Response with UUID for the lobby
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  format: UUID
+                  example: f455dea9-f8f2-42e6-bead-e97a3c329d8a
+    /message/{lobbyId}/msg/{messageId}:
+      put:
+        tags:
+          - Message
+        summary: Create message
+        parameters:
+          - in: header
+            name: X-Correlation-ID
+            schema:
+              type: string
+              format: uuid
+          - name: lobbyId
+            in: path
+            description: Lobby ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+          - name: messageId
+            in: path
+            description: Message ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+          - name: playerId
+            in: header
+            description: Player ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+        requestBody:
+          description: Body with message to be created
           required: true
-          schema:
-            type: string
-            format: UUID
-        - name: number
-          in: path
-          description: number of last message
-          required: true
-          schema:
-            type: string
-            format: integer
-        - name: playerId
-          in: header
-          description: Player ID
-          required: true
-          schema:
-            type: string
-            format: UUID
-      responses:
-        '200':
-          description: |-
-            Response with list of messages
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Message'
-components:
-  schemas:
-    Message:
-      type: object
-      properties:
-        id:
-          type: string
-          format: UUID
-        send_time:
-          type: string
-          format: date-time
-        player_name:
-          type: string
-        number:
-          type: integer
-        message:
-          type: string
-    MessageCreate:
-      type: object
-      properties:
-        player_id:
-          type: string
-          format: UUID
-        message:
-          type: string
-    PlayerCreate:
-      type: object
-      properties:
-        name:
-          type: string
-        team:
-          type: string
+                $ref: '#/components/schemas/MessageCreate'
+        responses:
+          '201':
+            description: |-
+              Empty response 
+    /message/{lobbyId}/msg/{number}:
+      get:
+        tags:
+          - Message
+        summary: Get all messages after number
+        parameters:
+          - in: header
+            name: X-Correlation-ID
+            schema:
+              type: string
+              format: uuid
+          - name: lobbyId
+            in: path
+            description: Lobby ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+          - name: number
+            in: path
+            description: number of last message
+            required: true
+            schema:
+              type: string
+              format: integer
+          - name: playerId
+            in: header
+            description: Player ID
+            required: true
+            schema:
+              type: string
+              format: UUID
+        responses:
+          '200':
+            description: |-
+              Response with list of messages
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+  components:
+    schemas:
+      Message:
+        type: object
+        properties:
+          id:
+            type: string
+            format: UUID
+          send_time:
+            type: string
+            format: date-time
+          player_name:
+            type: string
+          number:
+            type: integer
+          message:
+            type: string
+      MessageCreate:
+        type: object
+        properties:
+          player_id:
+            type: string
+            format: UUID
+          message:
+            type: string
+      PlayerCreate:
+        type: object
+        properties:
+          name:
+            type: string
+          team:
+            type: string

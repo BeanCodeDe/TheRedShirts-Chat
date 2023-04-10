@@ -31,6 +31,7 @@ type (
 		//Message
 		CreateMessage(message *Message) error
 		GetMessages(lobbyId uuid.UUID, toIgnoreplayerId uuid.UUID, number int) ([]*Message, error)
+		GetMessagesFirstRequest(lobbyId uuid.UUID, toIgnoreplayerId uuid.UUID) ([]*Message, error)
 		DeleteMessages(time time.Time) error
 	}
 )

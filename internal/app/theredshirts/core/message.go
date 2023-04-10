@@ -68,7 +68,12 @@ func (core CoreFacade) getMessages(context *util.Context, tx db.DBTx, playerId u
 	if player.LobbyId != lobbyId {
 		return nil, fmt.Errorf("error player %v from lobby %v is not authorised to load messages from lobby %v", playerId, player.LobbyId, lobbyId)
 	}
-	messages, err := tx.GetMessages(lobbyId, playerId, number)
+	var messages []*db.Message
+	if number != -1 {
+		messages, err = tx.GetMessages(lobbyId, playerId, number)
+	} else {
+		messages, err = tx.GetMessagesFirstRequest(lobbyId, playerId)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("something went wrong while loading messages in lobby [%v] from database: %v", lobbyId, err)
 	}
