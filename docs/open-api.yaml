@@ -60,7 +60,7 @@ paths:
             type: string
             format: UUID
         - name: playerId
-          in: query
+          in: header
           description: Player ID
           required: true
           schema:
@@ -103,7 +103,7 @@ paths:
             type: string
             format: integer
         - name: playerId
-          in: query
+          in: header
           description: Player ID
           required: true
           schema:
