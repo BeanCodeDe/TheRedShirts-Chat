@@ -16,7 +16,7 @@ const (
 	message_table_name                  = "message"
 	create_message_sql                  = "INSERT INTO %s.%s(id, send_time, lobby_id, player_id, topic, message) VALUES($1, $2, $3, $4, $5, $6)"
 	select_messages_by_lobby_and_number = "SELECT id, send_time, lobby_id, player_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND player_id != $2 AND number > $3"
-	select_first_messages_of_player     = "SELECT id, send_time, lobby_id, player_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND player_id != $2 AND number > (SELECT number FROM %s.%s WHERE lobby_id = $1 AND player_id = $2 AND topic = 'PLAYER_JOINS_LOBBY' ORDER BY number ASC LIMIT 1)"
+	select_first_messages_of_player     = "SELECT id, send_time, lobby_id, player_id, number, topic, message FROM %s.%s WHERE lobby_id = $1 AND player_id != $2 AND number > (SELECT number FROM %s.%s WHERE lobby_id = $1 AND player_id = $2 AND topic = 'PLAYER_JOINS_LOBBY' ORDER BY number DESC LIMIT 1)"
 	delete_messages_by_older_then       = "DELETE FROM %s.%s WHERE send_time < $1"
 )
 
