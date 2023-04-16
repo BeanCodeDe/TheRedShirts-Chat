@@ -74,6 +74,7 @@ func (adapter *LobbyAdapter) sendGetPlayer(context *util.Context, playerId uuid.
 	}
 
 	req.Header.Set(correlation_id, context.CorrelationId)
+	req.Header.Set("uber-trace-id", context.CorrelationId)
 	req.Header.Set(content_typ, content_typ_value)
 	resp, err := client.Do(req)
 

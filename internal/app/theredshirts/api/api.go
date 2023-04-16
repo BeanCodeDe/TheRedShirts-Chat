@@ -6,7 +6,7 @@ import (
 	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/core"
 	"github.com/BeanCodeDe/TheRedShirts-Message/internal/app/theredshirts/util"
 	"github.com/go-playground/validator"
-	"github.com/google/uuid"
+	"github.com/labstack/echo-contrib/jaegertracing"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,6 +31,7 @@ type (
 )
 
 func NewApi() (Api, error) {
+	initLogger()
 	core, err := core.NewCore()
 	if err != nil {
 		return nil, fmt.Errorf("error while creating core layer: %v", err)
@@ -40,10 +41,13 @@ func NewApi() (Api, error) {
 	e := echo.New()
 	e.HideBanner = true
 	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	e.Use(middleware.CORS(), setContextMiddleware, middleware.Recover())
+	e.Use(middleware.CORS(), middleware.Recover())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	chatGroup := e.Group(message_root_path)
+	c := jaegertracing.New(e, nil)
+	defer c.Close()
+
+	chatGroup := e.Group(message_root_path, setContextMiddleware)
 	initChatInterface(chatGroup, echoApi)
 
 	prom := prometheus.NewPrometheus("message", nil)
@@ -67,11 +71,11 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func setContextMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		correlationId := c.Request().Header.Get(correlation_id_header)
-		_, err := uuid.Parse(correlationId)
-		if err != nil {
-			log.Infof("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
-			correlationId = "WRONG FORMAT"
-		}
+		//_, err := uuid.Parse(correlationId)
+		//if err != nil {
+		//		log.Infof("Correlation id is not from format uuid. Set default correlation id. Error: %v", err)
+		//			correlationId = "WRONG FORMAT"
+		//		}
 		logger := log.WithFields(log.Fields{
 			correlation_id_header: correlationId,
 		})
